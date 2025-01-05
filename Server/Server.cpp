@@ -1,39 +1,256 @@
 #include "Server.h"
 
-double addition (const double& d1, const double& d2) {return d1+d2;}
-double  deduction (const double& d1, const double& d2) {return d1-d2;}
-double  multiplication (const double& d1, const double& d2) {return d1*d2;}
-double  sepatation (const double& d1, const double& d2) { if(d2 == 0) {cout << "Error: Деление на \"0\" не предусмотрено\n"; return 999999; } else return d1/d2;}
-
-
-void function (char* buffer) {
-  cout << "Buffer: " << buffer << endl;
-    string temp = buffer, char1, char2, char3, sign1, sign2;
-    if()
-    memset(buffer, 0 , sizeof(buffer));
-  std::istringstream iss(temp);
-  cout << "Separation of buffer\n";
-  std::getline(iss, char1, ' '); 
-  cout << char1 << "\n";
-  std::getline(iss, sign1, ' '); 
-  cout << sign1 << "\n";
-  std::getline(iss, char2, ' ');
-  cout << char2 << "\n";
-char sign = sign1[0];
-double result;
-double d1,d2;
-d1 = stod(char1);
-d2 = stod(char2);
-  switch(sign) {
-case '+': result = addition(d1, d2); break;
-case '-': result = deduction(d1, d2); break;
-case '*': result = multiplication(d1, d2); break;
-case '/': result = sepatation(d1, d2); break;
-  }
-
-  temp = to_string(result);
-  strcpy(buffer, temp.c_str());
-  cout << "Перевод string temp to char* buffer прошел успешно\n";
-
+// Функция для сложения двух чисел типа double
+double addition(const double &d1, const double &d2)
+{
+  // Принимает два числа типа double по константной ссылке (чтобы избежать копирования)
+  return d1 + d2; // Возвращает сумму двух чисел
 }
 
+// Функция для вычитания двух чисел типа double
+double deduction(const double &d1, const double &d2)
+{
+  // Принимает два числа типа double по константной ссылке
+  return d1 - d2; // Возвращает разность двух чисел
+}
+
+// Функция для умножения двух чисел типа double
+double multiplication(const double &d1, const double &d2)
+{
+  // Принимает два числа типа double по константной ссылке
+  return d1 * d2; // Возвращает произведение двух чисел
+}
+
+// Функция для деления двух чисел типа double
+double sepatation(const double &d1, const double &d2)
+{
+  // Принимает два числа типа double по константной ссылке
+  if (d2 == 0) // Проверка деления на ноль
+  {
+    std::cerr << "Error: Деление на \"0\" не предусмотрено\n"; // Вывод сообщения об ошибке
+    return 999999;
+  }
+  else
+    return d1 / d2; // Если деление на ноль не происходит, возвращает результат деления
+}
+
+// Функция `function` выполняет разбор выражения, вычисляет результат и сохраняет его в buffer
+void function(char *buffer)
+{
+  std::cout << "Buffer: " << buffer << std::endl; // Выводим содержимое буфера для отладки.
+  std::string temp = buffer;                      // Создаем std::string из переданного буфера.
+  memset(buffer, 0, sizeof(buffer));              // Очищаем буфер.
+
+  // Регулярное выражение для выражений вида "число оператор число".
+  std::regex pattern_2nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
+
+  // Регулярное выражение для выражений вида "число оператор (число оператор число)".
+  std::regex pattern_3nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*$)");
+
+  std::smatch matches; // Объект для хранения результатов поиска регулярного выражения
+  double result = 0.0; // Инициализируем переменную для хранения результата вычисления
+
+  // Проверяем, соответствует ли ввод шаблону с двумя числами
+  if (std::regex_match(temp, matches, pattern_2nums))
+  {
+    // Обрабатываем выражение с двумя числами
+    try
+    {
+      double num1 = std::stod(matches[1].str()); // Извлекаем первое число из совпадений и преобразуем в double.
+      char op = matches[2].str()[0];             // Извлекаем оператор.
+      double num2 = std::stod(matches[3].str()); // Извлекаем второе число и преобразуем в double.
+
+      // Выполняем операцию в зависимости от оператора.
+      switch (op)
+      {
+      case '+':
+        result = addition(num1, num2); // Вызываем функцию addition для сложения.
+        break;
+      case '-':
+        result = deduction(num1, num2); // Вызываем функцию deduction для вычитания.
+        break;
+      case '*':
+        result = multiplication(num1, num2); // Вызываем функцию multiplication для умножения.
+        break;
+      case '/':
+        result = sepatation(num1, num2); // Вызываем функцию sepatation для деления.
+        break;
+      default:
+        // Если оператор не распознан, устанавливаем сообщение об ошибке и завершаем функцию
+        strcpy(buffer, "Неверная операция на сервере."); // Копируем сообщение об ошибке в буфер
+        std::cerr << "Неверная операция на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+        return;
+      }
+    }
+    catch (std::invalid_argument const &ex)
+    {
+      // Обрабатываем исключение, когда не удалось преобразовать строку в число
+      std::cerr << "Неверный формат числа на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+      strcpy(buffer, "Неверный формат числа на сервере."); // Копируем сообщение об ошибке в буфер
+      return;
+    }
+    catch (std::out_of_range const &ex)
+    {
+      // Обрабатываем исключение, когда число выходит за диапазон допустимых значений
+      std::cerr << "Число за пределами диапазона на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+      strcpy(buffer, "Число за пределами диапазона на сервере."); // Копируем сообщение об ошибке в буфер
+      return;
+    }
+  }
+  // Проверяем, соответствует ли ввод шаблону с тремя числами
+  else if (std::regex_match(temp, matches, pattern_3nums))
+  {
+    // Обрабатываем выражение с тремя числами
+    try
+    {
+      double num1 = std::stod(matches[1].str()); // Извлекаем первое число.
+      char op1 = matches[2].str()[0];            // Извлекаем внешний оператор.
+      double num2 = std::stod(matches[3].str()); // Извлекаем второе число.
+      char op2 = matches[4].str()[0];            // Извлекаем внутренний оператор.
+      double num3 = std::stod(matches[5].str()); // Извлекаем третье число.
+      double inner_result = 0.0;                 // Переменная для хранения результата вычисления во скобках
+
+      // Выполняем операцию во скобках в зависимости от оператора.
+      switch (op2)
+      {
+      case '+':
+        inner_result = addition(num2, num3); // Вычисляем сложение чисел во скобках.
+        break;
+      case '-':
+        inner_result = deduction(num2, num3); // Вычисляем вычитание чисел во скобках.
+        break;
+      case '*':
+        inner_result = multiplication(num2, num3); // Вычисляем умножение чисел во скобках.
+        break;
+      case '/':
+        inner_result = sepatation(num2, num3); // Вычисляем деление чисел во скобках.
+        break;
+      default:
+        // Если оператор не распознан, устанавливаем сообщение об ошибке и завершаем функцию
+        strcpy(buffer, "Неверная операция во скобках на сервере."); // Копируем сообщение об ошибке в буфер
+        std::cerr << "Неверная операция во скобках на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+        return;
+      }
+
+      // Выполняем внешнюю операцию.
+      switch (op1)
+      {
+      case '+':
+        result = addition(num1, inner_result); // Вычисляем сложение.
+        break;
+      case '-':
+        result = deduction(num1, inner_result); // Вычисляем вычитание.
+        break;
+      case '*':
+        result = multiplication(num1, inner_result); // Вычисляем умножение.
+        break;
+      case '/':
+        result = sepatation(num1, inner_result); // Вычисляем деление.
+        break;
+      default:
+        strcpy(buffer, "Неверная внешняя операция на сервере."); // Копируем сообщение об ошибке в буфер
+        std::cerr << "Неверная внешняя операция на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+        return;
+      }
+    }
+    catch (std::invalid_argument const &ex)
+    {
+      // Обрабатываем исключение, когда не удалось преобразовать строку в число
+      std::cerr << "Неверный формат числа на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+      strcpy(buffer, "Неверный формат числа на сервере."); // Копируем сообщение об ошибке в буфер
+      return;
+    }
+    catch (std::out_of_range const &ex)
+    {
+      // Обрабатываем исключение, когда число выходит за диапазон допустимых значений
+      std::cerr << "Число за пределами диапазона на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+      strcpy(buffer, "Число за пределами диапазона на сервере."); // Копируем сообщение об ошибке в буфер
+      return;
+    }
+  }
+  // Если ввод соответствует команде exit
+  else if (temp == "exit")
+  {
+
+    std::cerr << "Поступила специальная команда\n"; // Выводим сообщение в поток cerr
+    return;
+  }
+  // Если ввод не соответствует ни одному из шаблонов
+  else
+  {
+
+    std::cerr << "Неверный формат ввода на сервере\n";   // Выводим сообщение об ошибке в поток cerr
+    strcpy(buffer, "Неверный формат ввода на сервере."); // Копируем сообщение об ошибке в буфер
+    return;
+  }
+
+  // Преобразуем результат в строку и сохраняем в буфер
+  std::string result_str = std::to_string(result);                     // Преобразуем результат в строку.
+  strncpy(buffer, result_str.c_str(), 255);                            // Копируем результат в буфер.
+  buffer[255] = '\0';                                                  // Гарантируем, что строка в буфере заканчивается нулем.
+  std::cout << "Перевод string temp to char* buffer прошел успешно\n"; // Выводим сообщение об успехе.
+}
+// Функция для обработки клиента в отдельном потоке
+void *handle_client(void *arg)
+{
+  // Извлекаем дескриптор сокета клиента из аргумента
+  int newSock = *(int *)arg;
+  // newSock - это дескриптор сокета, который используется для обмена данными с клиентом.
+  // * (int *) arg: Преобразование void* в int*, а затем разыменование указателя, чтобы получить int.
+
+  char buffer[256]; // Буфер для хранения данных от клиента
+
+  // Бесконечный цикл для приема и обработки данных от клиента
+  while (true)
+  {
+
+    ssize_t bytes_received = recv(newSock, buffer, 255, 0); // Получение данных от клиента
+    // recv() - получает данные из сокета.
+    // newSock - дескриптор сокета.
+    // buffer - буфер для хранения принятых данных.
+    // 255 - максимальное количество байтов для приема.
+    // 0 - флаги.
+    // bytes_received - количество принятых байтов.
+
+    // Проверка количества принятых байтов
+    if (bytes_received > 0)
+    {
+
+      buffer[bytes_received] = '\0'; // Добавление нуль-терминатора в конец полученных данных, чтобы создать строку C
+      // Теперь buffer содержит строку, завершенную нулем, которую можно использовать с функциями типа strcmp или strlen.
+
+      // Проверка на команду "exit"
+      if (strcmp(buffer, "exit") == 0)
+      {
+        std::cout << "Received exit command from client. Cliend closing connection.\n";
+        break; // Выход из цикла, если получена команда "exit".
+      }
+
+      function(buffer); // Вызываем функцию для обработки полученных данных.
+
+      send(newSock, buffer, strlen(buffer), 0); // Отправка данных обратно клиенту (эхо)
+    }
+    // Если клиент закрыл соединение
+    else if (bytes_received == 0)
+    {
+      std::cout << "Client closed the connection." << std::endl;
+      break; // Выход из цикла, если соединение закрыто клиентом.
+    }
+    // Обработка ошибок
+    else
+    {
+      std::cerr << "Error receiving data.\n";
+      break; // Выход из цикла, если произошла ошибка.
+    }
+  }
+
+  close(newSock); // Закрытие сокета
+
+  delete (int *)arg; // Освобождаем память, выделенную при создании потока.
+
+  // Завершение потока
+  pthread_exit(nullptr);
+  // pthread_exit() - завершает текущий поток.
+  // nullptr - возвращаемое значение при завершении (в данном случае, не используется).
+  return nullptr;
+}

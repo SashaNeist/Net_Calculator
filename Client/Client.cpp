@@ -1,102 +1,42 @@
 #include "Client.h"
 
+// Функция `formatChecker` проверяет формат ввода пользователя.
+// Возвращает `true`, если формат ввода корректен, `false` в противном случае.
+bool formatChecker(const char *buffer)
+{
+  std::string temp = buffer; // Создаем объект string из переданного массива символов.
 
+  // Регулярное выражение для двух чисел.
+  std::regex pattern_2nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
 
-bool formatChecker(char* buffer) {
-string temp = buffer, buffer1, buffer2, buffer3, buffer4, buffer5, trash;
-bool check = false;
+  // Регулярное выражение для трех чисел со скобками.
+  std::regex pattern_3nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*$)");
 
-
-if(temp.find('(') == string::npos) {
-  
-  std::istringstream iss(temp);
-  std::getline(iss, buffer1, ' '); 
-  std::getline(iss, buffer2, ' '); 
-  std::getline(iss, buffer3, '\0');
-if(buffer2 == "+" || buffer2 == "-" || buffer2 == "*" || buffer2 == "/" || buffer2 == "") {
-    if(buffer1.find(' ') == std::string::npos) {
-        if(buffer3.find(' ') == std::string::npos) check = true;
-        else cout << "Вторая переменная не удовлетворяет формату\n";
-    }
-    else cout << "Первая переменная не удовлетворяет формату\n";
-    }
-    else cout << "Знак операции не удовлетворяет формату\n";
-
-memset(buffer, 0 , sizeof(buffer));
-    int index = temp.find(' ');
-    temp.erase(index);
-    int index = temp.find(' ');
-    temp.erase(index);
-    
-    for(int i = 0; i < temp.length(); i++) {
-buffer[i] = temp[i];
-    }
-    
-  return check;
+  // Проверяем, соответствует ли ввод одному из шаблонов.
+  if (std::regex_match(temp, pattern_2nums) || std::regex_match(temp, pattern_3nums) || temp == "exit")
+  {
+    if (temp == "exit")
+      std::cout << "Received exit command. Client closed.\n";
+    return true;
+  }
+  else
+  {
+    // Выводим сообщение об ошибке, если ввод не соответствует ожидаемому формату.
+    std::cerr << "Неверный формат ввода. Ожидается 'число оператор число' либо 'число оператор (число оператор число)'.\n";
+    return false;
+  }
 }
 
-else {
- 
-  if(temp.find(' ') == string::npos) {
-  int open_parentheses = 0;
-  for (char c : temp) {
-    if (c == '(') {
-      open_parentheses++;
-    } else if (c == ')') {
-      open_parentheses--;
-      if (open_parentheses < 0) {
-        
-        return check;
-      }
-    }
+// Функция `function` считывает ввод пользователя и вызывает `formatChecker` для проверки формата.
+bool function(char *buffer)
+{
+  // Читаем строку из стандартного ввода в буфер.
+  std::cin.getline(buffer, 256);
+  // Проверяем формат ввода.
+  if (formatChecker(buffer))
+  {
+    return true;
   }
-  if (open_parentheses != 0) {
-    return check;
-  }
-check = true;
-  }
-  else cout << "Наличие пробелов не удовлетворяет данному формату, внимательно ознакомьтесь с инструкцией.\n";
-
-
-memset(buffer, 0 , sizeof(buffer));
-
-    int index1 = temp.find('(');
-    temp.erase(index1);
-    int index2 = temp.find(')');
-    temp.erase(index2);
-    if(index1 < 2) {for(int i = 0; i < temp.length(); i++) {
-      buffer[i] = temp[i];
-    }}
-    else {
-      int i = 0;
-      while(index1+ 1 != temp.length()) {
-        buffer[i] = temp[index1 + i];
-        i++;
-      }
-      int j = 0;
-      while(i != temp.length()) {
-        buffer[i] = temp[j];
-        i++;
-        j++;
-      }
-
-    }
-    
-  return check;
-}
-
-
-}
-
-
-
-bool function (char* buffer) {
-
-cin.getline(buffer, 256);
-if(formatChecker(buffer)) {
-
-  return true;
-  }
-else return false;
-
+  else
+    return false;
 }
