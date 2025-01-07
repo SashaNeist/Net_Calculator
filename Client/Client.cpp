@@ -20,8 +20,11 @@ bool formatChecker(const std::string buffer)
   // Регулярное выражение для трех чисел со скобками.
   std::regex pattern_3nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*$)");
 
+  // Регулярное выражение для трех чисел без скобок.
+  std::regex pattern_3nums_2(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
+
   // Проверяем, соответствует ли ввод одному из шаблонов.
-  if (std::regex_match(temp, pattern_2nums) || std::regex_match(temp, pattern_3nums) || temp == "exit")
+  if (std::regex_match(temp, pattern_2nums) || std::regex_match(temp, pattern_3nums) || std::regex_match(temp, pattern_3nums_2) || temp == "exit")
   {
     if (temp == "exit")
       std::cout << "Received exit command. Client closed.\n";

@@ -39,6 +39,9 @@ std::string function(const std::string buffer)
   // Регулярное выражение для выражений вида "число оператор (число оператор число)".
   std::regex pattern_3nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*\)\s*$)");
 
+  // Регулярное выражение для выражений вида "число оператор (число оператор число)".
+  std::regex pattern_3nums_2(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
+
   std::smatch matches; // Объект для хранения результатов поиска регулярного выражения
   double result = 0.0; // Инициализируем переменную для хранения результата вычисления
 
@@ -89,7 +92,7 @@ std::string function(const std::string buffer)
   // Проверяем, соответствует ли ввод шаблону с тремя числами
   else if (std::regex_match(temp, matches, pattern_3nums))
   {
-    // Обрабатываем выражение с тремя числами
+    // Обрабатываем выражение с тремя числами со скобками
     try
     {
       double num1 = std::stod(matches[1].str()); // Извлекаем первое число.
@@ -154,6 +157,48 @@ std::string function(const std::string buffer)
     }
   }
   // Если ввод соответствует команде exit
+  else if (std::regex_match(temp, matches, pattern_3nums_2))
+  { // Обрабатываем выражение с тремя числами без скобок
+    try
+    {
+      double num1 = std::stod(matches[1].str());
+      char op1 = matches[2].str()[0];
+      double num2 = std::stod(matches[3].str());
+      char op2 = matches[4].str()[0];
+      double num3 = std::stod(matches[5].str());
+
+      if (op1 == '*' || op1 == '/')
+      {
+        double tempResult = (op1 == '*') ? multiplication(num1, num2) : separation(num1, num2);
+        if (op2 == '+' || op2 == '-')
+          result = (op2 == '+') ? addition(tempResult, num3) : deduction(tempResult, num3);
+        else
+          result = (op2 == '*') ? multiplication(tempResult, num3) : separation(tempResult, num3);
+      }
+      else if (op2 == '*' || op2 == '/')
+      {
+        double tempResult = (op2 == '*') ? multiplication(num2, num3) : separation(num2, num3);
+        result = (op1 == '+') ? addition(num1, tempResult) : deduction(num1, tempResult);
+      }
+      else
+      {
+        double tempResult = (op1 == '+') ? addition(num1, num2) : deduction(num1, num2);
+        result = (op2 == '+') ? addition(tempResult, num3) : deduction(tempResult, num3);
+      }
+
+      return std::to_string(result);
+    }
+    catch (std::invalid_argument const &ex)
+    {
+      std::cerr << "Неверный формат числа на сервере\n";
+      return "Неверный формат числа на сервере.";
+    }
+    catch (std::out_of_range const &ex)
+    {
+      std::cerr << "Число за пределами диапазона на сервере\n";
+      return "Число за пределами диапазона на сервере.";
+    }
+  }
   else if (temp == "exit")
   {
 
