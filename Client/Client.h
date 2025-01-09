@@ -13,7 +13,7 @@
 #include <fcntl.h>      // Для работы с файловыми дескрипторами (fcntl(), O_NONBLOCK)
 #include <chrono>       // Для работы с временем
 #include <thread>       // Для работы с потоками
-#include <unistd.h>     // Для sleep()
+
 
 // Типы сообщений
 enum MessageType

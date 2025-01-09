@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+    <cppcheck version="2.16.0"/>
+    <errors>
+    </errors>
+</results>
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:output method="html" encoding="UTF-8" indent="yes"/>
+
+<xsl:template match="/">
+  <html>
+  <head>
+    <title>Cppcheck Report</title>
+    <style>
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid black; padding: 8px; text-align: left; }
+      th { background-color: #f2f2f2; }
+    </style>
+  </head>
+  <body>
+    <h1>Cppcheck Report</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Line</th>
+          <th>Severity</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+      <xsl:for-each select="results/error">
+        <tr>
+          <td><xsl:value-of select="@file"/></td>
+          <td><xsl:value-of select="@line"/></td>
+          <td><xsl:value-of select="@severity"/></td>
+          <td><xsl:value-of select="."/></td>
+        </tr>
+      </xsl:for-each>
+      </tbody>
+    </table>
+  </body>
+  </html>
+</xsl:template>
+</xsl:stylesheet>
