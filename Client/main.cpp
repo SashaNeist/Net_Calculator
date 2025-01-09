@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         while (true)
         {
             // Вызываем функцию function для получения выражения от пользователя
-            if (function(&buffer))
+            if (function(buffer))
             {
                 // Если пользователь ввел "exit", выходим из цикла
                 if (buffer == "exit")
@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
                     break;
                 }
             }
+            else
+                continue;
         }
         close(sock); // Закрываем сокет при завершении работы клиента
     }
@@ -152,7 +154,7 @@ int main(int argc, char *argv[])
         while (true)
         {
             // Вызываем функцию function для получения выражения от пользователя
-            if (function(&buffer))
+            if (function(buffer))
             {
                 // Проверяем, если пользователь ввел команду "exit"
                 if (buffer == "exit")

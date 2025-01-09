@@ -10,9 +10,8 @@ void hello()
 }
 // Функция `formatChecker` проверяет формат ввода пользователя.
 // Возвращает `true`, если формат ввода корректен, `false` в противном случае.
-bool formatChecker(const std::string buffer)
+bool formatChecker(const std::string &buffer)
 {
-  std::string temp = buffer; // Создаем объект string
 
   // Регулярное выражение для выражений вида "число оператор число".
   std::regex pattern_2nums(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
@@ -26,31 +25,45 @@ bool formatChecker(const std::string buffer)
   // Регулярное выражение для выражений вида "число оператор число оператор число".
   std::regex pattern_3nums_2(R"(^\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*([\+\-\*\/])\s*([0-9]+(?:\.[0-9]+)?)\s*$)");
 
-  // Проверяем, соответствует ли ввод одному из шаблонов.
-  if (std::regex_match(temp, pattern_2nums) || std::regex_match(temp, pattern_3nums_right) || std::regex_match(temp, pattern_3nums_left) || std::regex_match(temp, pattern_3nums_2) || temp == "exit")
+  // Проверяем exit
+  if (buffer == "exit")
   {
-    if (temp == "exit")
-      std::cout << "Received exit command. Client closed.\n";
+    std::cout << "Received exit command. Client closed.\n";
     return true;
   }
-  else
+
+  // Проверяем последовательно шаблоны
+  if (std::regex_match(buffer, pattern_2nums))
   {
-    // Выводим сообщение об ошибке, если ввод не соответствует ожидаемому формату.
-    std::cerr << "Неверный формат ввода. Ожидается 'число оператор число' либо 'число оператор (число оператор число)' либо 'число оператор число оператор число' либо команда 'exit'.\n";
-    return false;
+    return true;
   }
+  if (std::regex_match(buffer, pattern_3nums_right))
+  {
+    return true;
+  }
+  if (std::regex_match(buffer, pattern_3nums_left))
+  {
+    return true;
+  }
+  if (std::regex_match(buffer, pattern_3nums_2))
+  {
+    return true;
+  }
+
+  // Выводим сообщение об ошибке, если ввод не соответствует ни одному формату
+  std::cerr << "Неверный формат ввода. Ожидается 'число оператор число' либо 'число оператор (число оператор число)' либо 'число оператор число оператор число' либо команда 'exit'.\n";
+  return false;
 }
 
 // Функция `function` считывает ввод пользователя и вызывает `formatChecker` для проверки формата.
-bool function(std::string *buffer)
+bool function(std::string &buffer)
 {
   // Читаем строку из стандартного ввода в буфер.
-  std::cin >> *buffer;
+  if (!std::getline(std::cin, buffer))
+    return false;
   // Проверяем формат ввода.
-  if (formatChecker(*buffer))
-  {
+  if (formatChecker(buffer))
     return true;
-  }
   else
     return false;
 }
@@ -74,19 +87,20 @@ ssize_t sendMessage(int sock, const std::string &payload, MessageType type, cons
 // Функция для получения сообщения
 std::pair<MessageType, std::string> receiveMessage(int sock, struct sockaddr_in &clientAddr, socklen_t &clientAddrLen)
 {
+
   // Буфер для всего сообщения
   char buffer[65535];
   // Получение данных из сокета, используя recvfrom
   ssize_t bytes_received = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&clientAddr, &clientAddrLen);
-
+  
   // Обработка ошибок
   if (bytes_received == -1)
   {
     // Проверяем, что ошибка связана с отсутствием данных или блокировкой
     if (errno == EAGAIN || errno == EWOULDBLOCK)
     {
-      std::cerr << "Error: Data is empty\n";
-      return {MessageType::NONE, ""}; // Возвращаем NONE, если нет данных
+      //std::cerr << "Error: Data is empty\n";
+      return {MessageType::NONE, "Error: Data is empty"}; // Возвращаем NONE, если нет данных
     }
     else
     {

@@ -1,0 +1,93 @@
+#!/usr/bin/expect
+
+set timeout 10
+set protocols {tcp udp}
+
+puts "========================================"
+puts "          STARTING TESTS                 "
+puts "========================================"
+
+
+foreach protocol $protocols {
+    puts "\nTesting Protocol: $protocol"
+    puts "----------------------------------------"
+    spawn ./Client/Client 127.0.0.1 $protocol
+    match_max 100000
+    expect -exact "Client was started. Connected with $protocol\r
+Добро пожаловать в Калькулятор!\r
+Введите выражение в формате: a1+a2 либо a1+(a2+a3), где переменная обязательно число,\r
+Доступные операции: +,-,*,/ \r
+Если вы хотите выйти из калькулятора, введите вместо выражения кодовое слово \"exit\" \r
+"
+
+    set expressions {
+        "10 + 5"         "10 + 5\r
+Result: 15.000000\r"
+        "20/4"          "20/4\r
+Result: 5.000000\r"
+        "20*2"          "20*2\r
+Result: 40.000000\r"   
+        "2 + (3+4)"     "2 + (3+4)\r
+Result: 9.000000\r"
+        "10 - (5-2)"   "10 - (5-2)\r
+Result: 7.000000\r"
+        "12*(3/2)"      "12*(3/2)\r
+Result: 18.000000\r"
+        "(2+3)+4"      "(2+3)+4\r
+Result: 9.000000\r"
+        "(10-5.2)-2"    "(10-5.2)-2\r
+Result: 2.800000\r"
+        "10+5*2"     "10+5*2\r
+Result: 20.000000\r"
+        "20/4-1"    "20/4-1\r
+Result: 4.000000\r"
+        "2+3+4"    "2+3+4\r
+Result: 9.000000\r"
+        "10-5-2"    "10-5-2\r
+Result: 3.000000\r"
+        "12*3/2"    "12*3/2\r
+Result: 18.000000\r"
+         "100/5*2"    "100/5*2\r
+Result: 40.000000\r"
+        "1.5+2.5*2"    "1.5+2.5*2\r
+Result: 6.500000\r"
+         "10/3*3"    "10/3*3\r
+Result: 10.000000\r"
+        "1.5+2.5*2"    "1.5+2.5*2\r
+Result: 6.500000\r"
+		"9999999999+1*2"  "9999999999+1*2\r
+Result: 10000000001.000000\r"
+         "10+a*2"  "10+a*2\r
+Неверный формат ввода. Ожидается 'число оператор число' либо 'число оператор (число оператор число)' либо 'число оператор число оператор число' либо команда 'exit'.\r"    
+        "(12*3)/0"    "(12*3)/0\r
+Received separation Error: Деление на 0\r"
+    	"10 + 5 + a"      "10 + 5 + a\r
+Неверный формат ввода. Ожидается 'число оператор число' либо 'число оператор (число оператор число)' либо 'число оператор число оператор число' либо команда 'exit'.\r"
+		"999999999999999999999999999*9999999999999999999"  "999999999999999999999999999*9999999999999999999\r
+Result: 9999999999999999931398190359470212947659194368.000000\r"        
+		"exit" "exit\r"
+    }
+
+    foreach {expr expected_output} $expressions {
+        send -- "$expr\r"
+        expect {
+             -exact "$expected_output" {
+                 puts "Protocol: $protocol, Expression: $expr - PASSED"
+            }
+            timeout {
+               puts "Protocol: $protocol, Expression: $expr - TIMEOUT"
+           }
+           eof {
+               puts "Protocol: $protocol, Connection closed unexpectedly"
+            exit
+           }
+        }
+    }
+
+    expect eof
+    puts "Protocol: $protocol - Connection closed gracefully"
+    puts "----------------------------------------"
+}
+puts "========================================"
+puts "             TESTS FINISHED              "
+puts "========================================"

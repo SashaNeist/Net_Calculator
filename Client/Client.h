@@ -13,6 +13,7 @@
 #include <fcntl.h>      // Для работы с файловыми дескрипторами (fcntl(), O_NONBLOCK)
 #include <chrono>       // Для работы с временем
 #include <thread>       // Для работы с потоками
+#include <unistd.h>     // Для sleep()
 
 // Типы сообщений
 enum MessageType
@@ -28,11 +29,11 @@ void hello();
 
 // Объявление внешней функции, которая обрабатывает буфер и возвращает bool
 // Принимает указатель на строку для возможности её модификации
-bool function(std::string *buffer);
+bool function(std::string &buffer);
 
 // Объявление внешней функции, которая проверяет формат буфера и возвращает bool
 // Принимает константную ссылку на строку, так как не должна менять содержимое
-bool formatChecker(const std::string buffer);
+bool formatChecker(const std::string &buffer);
 
 // Функция для отправки сообщения (с добавлением типа и длины)
 ssize_t sendMessage(int sock, const std::string &payload, MessageType type, const struct sockaddr_in &addr);
