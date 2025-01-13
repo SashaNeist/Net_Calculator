@@ -75,7 +75,7 @@ Result: 9999999999999999931398190359470212947659194368.000000\r"
                  puts "Protocol: $protocol, Expression: $expr - PASSED"
             }
             timeout {
-               puts "Protocol: $protocol, Expression: $expr - TIMEOUT"
+               puts "Protocol: $protocol, Expression: $expr - FAILED"
            }
            eof {
                puts "Protocol: $protocol, Connection closed unexpectedly"
