@@ -166,6 +166,8 @@ int main()
                 bool askReceived = false;
                 // Фиксируем время начала ожидания
                 auto startTime = std::chrono::steady_clock::now();
+                int retryCount = 0;
+                while(retryCount < 3 && !askReceived) {
                 while (true)
                 {
                     // Получаем текущее время
@@ -176,6 +178,7 @@ int main()
                     if (duration >= 3)
                     {
                         std::cout << "Timeout waiting for Result UDP ACK\n";
+                        retryCount++;
                         break; // Если таймаут истек, выходим из цикла ожидания ACK
                     }
                     // Пытаемся получить UDP сообщение, ожидая ACK от клиента на результат
@@ -188,6 +191,7 @@ int main()
                     }
                     // Пауза на 10 миллисекунд
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
                 }
                 // Если ACK не был получен в течение таймаута
                 if (!askReceived)
